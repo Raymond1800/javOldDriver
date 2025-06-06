@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JAV老司机
 // @namespace    https://sleazyfork.org/zh-CN/users/25794
-// @version      3.8.9
+// @version      3.8.9 R
 // @supportURL   https://sleazyfork.org/zh-CN/scripts/25781/feedback
 // @source       https://github.com/hobbyfang/javOldDriver
 // @description  JAV老司机神器,支持各Jav老司机站点。拥有高效浏览Jav的页面排版，JAV高清预览大图，JAV列表无限滚动自动加载，合成“挊”的自动获取JAV磁链接，一键自动115离线下载。。。。没时间解释了，快上车！
@@ -33,7 +33,7 @@
 // avsox有无码jav资源，含FC2  tellme.pw/avsox
 // @include      *://*avsox.*/*
 
-// jav321有素人资源、排行榜      
+// jav321有素人资源、排行榜
 // @include      *://*jav321.com/video/*
 
 // javdb有各资源排行榜，但部分需付费  javdb.com
@@ -45,6 +45,7 @@
 // @include      *://115.com/*
 // @include      *://*.quark.cn/list*
 // @include      *://www.*dmm*/*
+// @include      *://sukebei.nyaa.si/*
 
 // @run-at       document-idle
 // @grant        GM_xmlhttpRequest
@@ -141,7 +142,7 @@
     const TORRENTKITTY_DOMAIN = 'www.torrentkitty.one';
     const MMTV_DOMAIN = '7mmtv.sx';
     const JAVLIB_DOMAIN = 'r86m.com';
-    
+
     // 115用户ID
     let jav_userID = GM_getValue('jav_user_id', 0);
     // icon图标
@@ -424,7 +425,7 @@
          * @param {string} url 对象参数
          * @param {string} referrer
          * @param {number} timeoutInt 超时毫秒数
-         * @returns {Promise} 
+         * @returns {Promise}
          */
         static request(url, referrerStr, timeoutInt) {
             return new Promise((resolve, reject) => {
@@ -465,7 +466,7 @@
         /**
          * 发起网络请求
          * @param {*} details 对象参数
-         * @returns {Promise} 
+         * @returns {Promise}
          */
         static requestGM_XHR(details) {
             return new Promise((resolve, reject) => {
@@ -495,7 +496,7 @@
         }
 
         /**
-         * 获取带-的番号 
+         * 获取带-的番号
          * @param {String} avid 番号如:ABP888
          * @returns {String}  带-的番号
          */
@@ -508,7 +509,7 @@
             // crazyasia99999,sm999,video_999,BrazzersExxtra.99.99.99 不处理
             if (avid.match(/^(crazyasia|sm|video_|BrazzersExxtra)+/gi)) return avid;
             //去除开头的FC2
-            avid = avid.replace(/\b(FC2+)/gi, ""); 
+            avid = avid.replace(/\b(FC2+)/gi, "");
             let letter = avid.match(/[a-z|A-Z]+/gi);
             let num = avid.match(/\d+$/gi)[0];
             if (num.length > 3) {
@@ -697,7 +698,7 @@
             let p = Common.getBigPreviewImgUrlFromBlogjav(avid);
             let p2 = Common.getBigPreviewImgUrlFromJavStore(avid);
             p.then(imgUrl => {
-   
+
                 if (!imgUrl || imgUrl === null) {
                     addJavArchiveImg.call(this);
                     return;
@@ -852,7 +853,7 @@
                                 imgUrl = img_array[img_array.length - 1].src;
                                 imgUrl = imgUrl ? imgUrl : img_array[0].dataset.src;
                                 imgUrl = imgUrl.replace('pixhost.org', 'pixhost.to').replace('.th', '')
-                                    .replace('thumbs', 'images').replace('//t', '//img').replace(/[\?*\"*]/, '');                            
+                                    .replace('thumbs', 'images').replace('//t', '//img').replace(/[\?*\"*]/, '');
                             }
 
                             return Common.requestGM_XHR({
@@ -878,9 +879,9 @@
             });
         }
         /**
-         * 
-         * @param {string} key 
-         * @param {string} site 
+         *
+         * @param {string} key
+         * @param {string} site
          * @returns {Promise}  Promise内实现异步返回参数url
          */
         static searchBing(key,site,other) {
@@ -914,7 +915,7 @@
 
         /**
          * 获取Dmm对应番号的数据
-         * @param {string} dmmIdUrl DmmId网址 
+         * @param {string} dmmIdUrl DmmId网址
          * @returns {Promise}  Promise内实现异步返回参数dmmData
          */
         static getDmmData(dmmIdUrl) {
@@ -935,14 +936,14 @@
                 dmmData.user_num = $(doc).find(".d-review__evaluates strong").text();
                 dmmData.url = dmmIdUrl;
                 dmmData.finalUrl = result.finalUrl;
-                return dmmData; 
+                return dmmData;
             }).catch(msg => {
                 return {};
             });
         }
         /**
          * 获取JavDb对应番号的数据
-         * @param {string} avid av编号 
+         * @param {string} avid av编号
          * @returns {Promise}  Promise内实现异步返回参数javdbData
          */
         static getJavDbData(avid) {
@@ -982,7 +983,7 @@
             let javId5 = javId.replace(/(-0)/g, "-"); //把番号-替换为-0，例如VRKM-01057 =》 VRKM-1057
             let javId6 = javId.replace(/(-)/g, "0"); //把番号-替换为0，例如VRKM-1192 =》 VRKM01192
             let javId_Key = javId.replace(/(-)/g, "+"); //把番号-替换为+，例如VRKM-1192 =》 VRKM+1192
-            
+
             //保存查询关键词参数
             GM_setValue("115_search_var", `${javId}|${javId2}|${javId3}|${javId4}|${javId5}|${javId6}`);
             let promise1 = Common.request(`https://webapi.115.com/files/search?search_value=${javId_Key}&format=json&limit=100`,"",3000);
@@ -1595,7 +1596,7 @@
                 // 新增VR发行、FC2发行菜单入口
                 $('.menul1 ul li:contains("新发行")').after('<li><a href="https://onejav.com/popular/?amateur=1" target="_blank" style="color: red;">FC2发行</a></li>');
                 $('.menul1 ul li:contains("新发行")').after('<li><a href="vl_genre.php?g=aaua" style="color: red;">VR发行</a></li>');
-                
+
 
                 // 处理javlib番号详情页面的脚本
                 if ($('.header').length && $('meta[name="keywords"]').length) {
@@ -1764,7 +1765,7 @@
             let a3 = this.waterfallButton();
             if ((/(JavBus|AVMOO|AVSOX)/g).test(document.title) || $("footer:contains('JavBus')").length) {
                 GM_addStyle(`
-                    .info p {line-height: 18px!important;} 
+                    .info p {line-height: 18px!important;}
                     .screencap img{	width:100%;	max-width: 1000px;}
                 `);
                 // 新增FC2菜单入口
@@ -2009,7 +2010,7 @@
                 // 新增VR菜单入口
                 $('.navbar-dropdown.is-boxed .navbar-item:eq(0)')
                 .after('<a class="navbar-item" href="/advanced_search?type=0&score_min=4.2&score_max=&released_start=&released_end=&actors%5B%5D=&tags%5B%5D=&tags%5B%5D=212%7CVR&p=0&d=0&d=1&c=0&s=0&i=0&v=0&commit=檢索&lm=h" style="color: red;">VR</a>');
-                
+
 
                 // 瀑布流脚本
                 thirdparty.waterfallScrollInit();
@@ -2039,7 +2040,7 @@
                                 <a href="#maodian" style="color: #3273dc; font-weight: bold;">
                                     <span>屏蔽评分人数&nbsp&lt;&nbsp</span>
                                 </a>
-                                <input id="offusernum" name="offusernum" class="input" placeholder="0&nbsp人数" min="0" max="9999" type="number" 
+                                <input id="offusernum" name="offusernum" class="input" placeholder="0&nbsp人数" min="0" max="9999" type="number"
                                         style="height: 1.5em;width: 5.5em;padding: 2px;margin: 0.6em 1em 0 0;">
                             </div>
                         </div>
@@ -2098,7 +2099,7 @@
                         Common.addBrowseJavidCache(AVID);
                         //去除广告
                         $("div.top-meta").remove();
-                
+
                         //查找115是否有此番号
                         Common.search115Data(AVID, (BOOLEAN_TYPE, playUrl, pc) => {
                             if (BOOLEAN_TYPE) {
@@ -2115,7 +2116,7 @@
                             }
                             console.log("番号输出:" + AVID);
                         });
-            
+
                         let mag_array = $("div.magnet-links .item");
                         for (var i = 0; i < mag_array.length; i++) {
                             let magEle = mag_array[i];
@@ -2129,7 +2130,7 @@
                             );
                         }
                     }
-                    
+
                 }
             }
         }
@@ -2550,15 +2551,15 @@
                                         <a title="可忽略" href="https://${GM_getValue('avsox_url')}/cn/search/${avid}" target="_blank">
                                             <span class="tag hobby" style="margin-right: 5px;background-color:#bf9be6;display:none;">avsox</span>
                                         </a>
-                                        <a title="无码 JAV资源站" href="https://${GM_getValue('javbus_url')}/${avid}" target="_blank">               
+                                        <a title="无码 JAV资源站" href="https://${GM_getValue('javbus_url')}/${avid}" target="_blank">
                                             <span class="tag hobby" style="margin-right: 5px;background-color:#febe00;">JavBus</span>
                                         </a>
                                         <a title="有码 JAV资源站" href="https://${GM_getValue('javlib_url')}/cn/vl_searchbyid.php?keyword=${avid}" target="_blank">
-                                            <span class="tag hobby" style="margin-right: 0px;background-color:#f908bb;">JavLib</span>    
+                                            <span class="tag hobby" style="margin-right: 0px;background-color:#f908bb;">JavLib</span>
                                         </a>
-                                        <a title="FC2 JAV资源站" href="${Common.getOneJavSearchUrl(avid)}" target="_blank">            
+                                        <a title="FC2 JAV资源站" href="${Common.getOneJavSearchUrl(avid)}" target="_blank">
                                             <span class="tag hobby" style="margin-right: 3px;background-color:#00d1b2;">OneJav</span>
-                                        </a>  
+                                        </a>
                                     `);
                             let $a = $(`
                                         <a title="素人 JAV资源站" href="javascript:void(0);">
@@ -2894,7 +2895,7 @@
                                 let url = a[0].parentElement.href.replace(location.origin, 'https://' + [GM_getValue('javdb_url')]);
                                 if(url.indexOf("http") < 0) {
                                     url = 'https://' + [GM_getValue('javdb_url')] + url;
-                                } 
+                                }
                                 resolve(url);
                             }
                             else {
@@ -3421,6 +3422,51 @@
         },
     };
 
+        /**
+     * 为 Nyaa.si 网站添加115离线功能
+     */
+    function nyaaScript() {
+        // 查找页面上所有的磁力链接图标 <a> 标签
+        const magnetLinks = document.querySelectorAll('.torrent-list td.text-center a[href^="magnet:"]');
+
+        magnetLinks.forEach(link => {
+            // 获取原始的磁力链接 URI
+            const magnetURI = link.href;
+
+            // 找到包含这个链接的父级表格行 <tr>
+            const parentRow = link.closest('tr');
+            if (!parentRow) return;
+
+            // 关键步骤：将磁力链接存储在父行的 'maglink' 属性中。
+            // 这是为了让 handle_event 函数能够正确获取到链接。
+            parentRow.setAttribute('maglink', magnetURI);
+
+            // 创建一个新的 "115离线" 按钮
+            const offlineButton = document.createElement('a');
+            offlineButton.href = '#'; // 防止点击时页面跳转
+            offlineButton.textContent = '115离线';
+            offlineButton.title = '115离线下载';
+
+            // 关键步骤：添加 'nong-offline-download' 类名。
+            // 这是事件处理器识别按钮的依据。
+            offlineButton.className = 'nong-offline-download';
+
+            // 添加一些样式，使其更美观
+            Object.assign(offlineButton.style, {
+                marginLeft: '8px',
+                color: 'rgb(0, 180, 30)', // 绿色，与脚本中其他离线按钮一致
+                fontWeight: 'bold',
+                textDecoration: 'none'
+            });
+
+            // 关键步骤：为新按钮绑定已有的点击事件处理函数
+            offlineButton.addEventListener('click', thirdparty.nong.magnet_table.handle_event, false);
+
+            // 将新创建的按钮插入到原始磁力链接图标的后面
+            link.insertAdjacentElement('afterend', offlineButton);
+        });
+    }
+
     function mainRun() {
         Common.init();
         GM_addStyle(`
@@ -3451,6 +3497,11 @@
         Jav.javDBScript();
         Jav.quarkScript();
         thirdparty.login115Run();
+
+        // 当访问 nyaa.si 网站时，执行相应的功能
+        if (domain.includes('sukebei.nyaa.si')) { // <-- 添加这部分
+            nyaaScript();
+        }
     }
     mainRun();
 })();
