@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JAV老司机
 // @namespace    https://sleazyfork.org/zh-CN/users/25794
-// @version      3.8.9 R
+// @version      3.20.0 R
 // @supportURL   https://sleazyfork.org/zh-CN/scripts/25781/feedback
 // @source       https://github.com/hobbyfang/javOldDriver
 // @description  JAV老司机神器,支持各Jav老司机站点。拥有高效浏览Jav的页面排版，JAV高清预览大图，JAV列表无限滚动自动加载，合成“挊”的自动获取JAV磁链接，一键自动115离线下载。。。。没时间解释了，快上车！
@@ -46,6 +46,8 @@
 // @include      *://*.quark.cn/list*
 // @include      *://www.*dmm*/*
 // @include      *://sukebei.nyaa.si/*
+// @include      *://*btdig.com/*
+
 
 // @run-at       document-idle
 // @grant        GM_xmlhttpRequest
@@ -997,7 +999,7 @@
                             let row = resultJson.data[i];
                             if (row.play_long && (row.n.search(reg) >= 0)) { //iv vdi ico play_long
                                 pickcode = row.pc;
-                                callback(true, `https://v.anxia.com/?pickcode=${pickcode}`, pickcode);
+                                callback(true, `https://115vod.com/?pickcode=${pickcode}`, pickcode);
                                 return;
                             }
                         }
@@ -3467,6 +3469,53 @@
         });
     }
 
+    function btdigScript() {
+
+        // --- 逻辑分支1: 处理搜索结果页 ---
+        const searchResults = document.querySelectorAll('div.one_result');
+        if (searchResults.length > 0) {
+            console.log('JAV老司机: 检测到btdig搜索页, 正在添加按钮...');
+            searchResults.forEach(resultDiv => {
+                if (resultDiv.querySelector('.nong-offline-download')) return;
+
+                // [修正] 使用更精确的CSS选择器来找到磁力链接的<a>标签
+                const magnetLinkElement = resultDiv.querySelector('a[href^="magnet:"]');
+                if (!magnetLinkElement) return;
+
+                // 从原始链接中提取纯净的磁力链接
+                const rawMagnetURI = magnetLinkElement.href;
+                const match = rawMagnetURI.match(/(magnet:\?xt=urn:btih:[a-fA-F0-9]{40})/i);
+                if (!match) return;
+                const magnetURI = match[0];
+
+                // [关键修正] 将 maglink 属性设置在按钮的祖父元素上
+                // magnetLinkElement.parentElement 是包含图标和链接的<span>
+                // magnetLinkElement.parentElement.parentElement 是包含文件数和磁力链接的<span>
+                // 这个元素将成为按钮的祖父元素
+                const containerForMaglink = magnetLinkElement.parentElement.parentElement;
+                containerForMaglink.setAttribute('maglink', magnetURI);
+
+                const offlineButton = document.createElement('a');
+                offlineButton.href = '#';
+                offlineButton.textContent = '115离线';
+                offlineButton.title = '115离线下载';
+                offlineButton.className = 'nong-offline-download';
+                Object.assign(offlineButton.style, {
+                    marginLeft: '10px',
+                    color: 'rgb(0, 180, 30)',
+                    fontWeight: 'bold',
+                    textDecoration: 'none'
+                });
+
+                offlineButton.addEventListener('click', thirdparty.nong.magnet_table.handle_event, false);
+                // 按钮的插入位置保持不变，它会被添加到包含图标和链接的<span>内部
+                magnetLinkElement.parentElement.appendChild(offlineButton);
+            });
+            return;
+        }
+
+    }
+
     function mainRun() {
         Common.init();
         GM_addStyle(`
@@ -3501,6 +3550,11 @@
         // 当访问 nyaa.si 网站时，执行相应的功能
         if (domain.includes('sukebei.nyaa.si')) { // <-- 添加这部分
             nyaaScript();
+        }
+
+        // 新增：当访问 btdig.com 时，执行相应的功能
+        if (domain.includes('btdig.com')) { // <--- 新增此部分
+            btdigScript();
         }
     }
     mainRun();
